@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import asyncHandler from "../utils/AsyncHandler";
 
 const connectDB = async () => {
     try {

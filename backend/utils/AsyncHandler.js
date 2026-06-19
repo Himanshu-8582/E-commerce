@@ -1,9 +1,11 @@
 // Note:- This function must return a callback function which takes req,res,next as parameters
-export default asyncHandler = (requestHandler) => {
+const asyncHandler = (requestHandler) => {
   return (req, res, next) => {
     Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err));
   };
 };
+
+export default asyncHandler;
 
 // We can Also write it as , But it kills scalability and readability of code
 
