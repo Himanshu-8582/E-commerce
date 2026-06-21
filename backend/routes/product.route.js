@@ -1,11 +1,24 @@
 import express from 'express';
-import { createProduct, deleteProduct, getAllProducts } from '../controllers/product.controller.js';
+import { createProduct, deleteProduct, getAllProducts, getFeaturedProducts, getProductsByCategory, getRecommendedProducts, toggleFeaturedProduct } from '../controllers/product.controller.js';
 import { adminRoute, protectedRoute } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
 router.get('/',protectedRoute,adminRoute, getAllProducts);
-router.get("/featured", protectedRoute, adminRoute,);
-router.post("/create-post", protectedRoute, adminRoute, createProduct);
+router.get("/featured", protectedRoute, adminRoute,getFeaturedProducts);
+router.get('/recommendations', getRecommendedProducts);
+router.get('/category/:category', getProductsByCategory);
+
+router.post("/", protectedRoute, adminRoute, createProduct);
+
+
+router.patch(
+  "/:id/toggle-featured",
+  protectedRoute,
+  adminRoute,
+  toggleFeaturedProduct,
+);
+
+
 router.delete("/:id", protectedRoute, adminRoute, deleteProduct);
 export default router;

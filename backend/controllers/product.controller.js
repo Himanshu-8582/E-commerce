@@ -4,6 +4,17 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { redis } from "../lib/redis.js";
 import { ApiError } from "../utils/ApiError.js";
 
+
+
+const updateFeaturedProduct = async (req, res) => {
+    const featuredProducts = await Product.find({ isFeatured: true }).lean();
+    await redis.set("featured_products", JSON.stringify(featuredProducts));
+}
+
+
+
+
+
 export const getAllProducts = asyncHandler(async (req, res) => {
     const products = await Product.find({});
     return res.status(200).json(new ApiResponse(200, products, 'Products fetched successfully'));
@@ -56,6 +67,7 @@ export const createProduct = asyncHandler(async (req, res) => {
     return res.status(201).json(new ApiResponse(201, " ", product));
 });
 
+
 export const deleteProduct = asyncHandler(async (req, res) => {
     const product = await Product.findById(req.params.id);
     if (!product) {
@@ -74,3 +86,59 @@ export const deleteProduct = asyncHandler(async (req, res) => {
     await Product.findByIdAndDelete(req.params.id);
     return res.json(new ApiResponse(200, 'message deleted successfully'));
 });
+
+
+export const getRecommendedProducts = asyncHandler(async (req, res) => {
+    const products = await Product.aggregate([
+        {
+            $sample: { size: 3 }
+        },
+        {
+            $project: {
+                _id: 1,
+                name: 1,
+                description: 1,
+                image: 1,
+                price: 1,
+            }
+        }
+    ]);
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          "Recommended products fetched successfully",
+          products,
+        ),
+      );
+})
+
+
+export const getProductsByCategory = asyncHandler(async (req, res) => {
+    const { category } = req.params;
+    if (!category) throw new ApiError(404, 'category not Found!');
+    const products = await Product.find({ category }).lean();
+    return res.status(200).json(new ApiResponse(200, 'Products by category', products));
+})
+
+
+export const toggleFeaturedProduct = asyncHandler(async (req, res) => {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+        throw new ApiError(404, 'Product not found!');
+    }
+    product.isFeatured = !product.isFeatured;
+    const updatedProduct = await product.save();
+
+    await updateFeaturedProductsCache();
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          "Featured status updated successfully",
+          updatedProduct,
+        ),
+      );
+})
