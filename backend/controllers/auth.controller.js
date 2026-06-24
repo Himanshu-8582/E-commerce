@@ -139,10 +139,5 @@ export const refresh_Token = asyncHandler(async (req, res) => {
 
 
 export const getProfile = asyncHandler(async (req, res) => {
-    const userId = req.userId;
-    const user = await User.findById(userId).select('-password');
-    if (!user) {
-        throw new ApiError(404, 'User not found');
-    }
-    return res.json(new ApiResponse(200, 'Profile retrieved successfully', user));
+    return res.json(new ApiResponse(200, 'Profile retrieved successfully', req.user));
 });
