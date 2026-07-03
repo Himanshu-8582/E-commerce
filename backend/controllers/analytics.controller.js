@@ -1,5 +1,5 @@
 import express from 'express';
-import asyncHandler from '../utils/AsyncHandler';
+import asyncHandler from '../utils/AsyncHandler.js';
 import User from '../models/user.model.js';
 import Product from '../models/product.model.js';
 import Order from '../models/order.model.js';

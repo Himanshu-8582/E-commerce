@@ -106,7 +106,7 @@ export const login = asyncHandler(async (req, res) => {
 
 export const logout = asyncHandler(async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
-    console.log(refreshToken);
+    // console.log(refreshToken);
     if (refreshToken) {
         const decode = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
         await redis.del(`refresh_token:${decode.userId}`);
