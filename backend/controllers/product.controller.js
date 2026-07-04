@@ -3,13 +3,14 @@ import Product from '../models/product.model.js';
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { redis } from "../lib/redis.js";
 import { ApiError } from "../utils/ApiError.js";
+import cloudinary from "../lib/cloudinary.js";
 
 
 
-const updateFeaturedProduct = async (req, res) => {
-    const featuredProducts = await Product.find({ isFeatured: true }).lean();
-    await redis.set("featured_products", JSON.stringify(featuredProducts));
-}
+const updateFeaturedProductsCache = async (req, res) => {
+  const featuredProducts = await Product.find({ isFeatured: true }).lean();
+  await redis.set("featured_products", JSON.stringify(featuredProducts));
+};
 
 
 
@@ -17,7 +18,9 @@ const updateFeaturedProduct = async (req, res) => {
 
 export const getAllProducts = asyncHandler(async (req, res) => {
     const products = await Product.find({});
-    return res.status(200).json(new ApiResponse(200, products, 'Products fetched successfully'));
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "Products fetched successfully", products));
 });
 
 // check redis -> if miss -> fatch from momgo -> store in redis -> return ; else hit then return 
@@ -132,6 +135,8 @@ export const toggleFeaturedProduct = asyncHandler(async (req, res) => {
     const updatedProduct = await product.save();
 
     await updateFeaturedProductsCache();
+
+    // console.log("Updated product featured status:", updatedProduct);
     return res
       .status(200)
       .json(

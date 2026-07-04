@@ -8,6 +8,8 @@ import { useUserStore } from "./stores/useUserStore.js";
 import { useEffect } from "react";
 
 import LoadingSpinner from "./components/LoadingSpinner.jsx";
+import AdminPage from "./pages/AdminPage.jsx";
+import CategoryPage from "./pages/CategoryPage.jsx";
 
 
 function App() {
@@ -30,8 +32,26 @@ function App() {
         <NavBar />
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={ !user? <SignIn />:<Navigate to="/" /> } />
-          <Route path="/signup" element={ !user? <SignUp />:<Navigate to="/" /> } />
+          <Route
+            path="/login"
+            element={!user ? <SignIn /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/signup"
+            element={!user ? <SignUp /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/admin-dashboard"
+            element={
+              user?.role === "admin" ? <AdminPage /> : <Navigate to="/login" />
+            }
+          />
+          <Route
+            path="/category/:category"
+            element={
+              <CategoryPage />
+            }
+          />
         </Routes>
       </div>
       <Toaster />
