@@ -8,7 +8,8 @@ import crypto from "crypto";
 import Coupon from "../models/coupon.model.js";
 import Order from "../models/order.model.js";
 
-const createNewCoupon = async (userId) => {
+export const createNewCoupon = async (req, res) => {
+  const user = req.user;
   const coupon = await Coupon.create({
     code: "GIFT" + Math.random().toString(36).substring(2, 8).toUpperCase(),
 
@@ -16,10 +17,10 @@ const createNewCoupon = async (userId) => {
 
     expirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
 
-    userId,
+    userId: user._id,
   });
 
-  return coupon;
+  return res.status(200).json(new ApiResponse(200,"Coupon created",coupon));
 };
 
 export const createCheckoutOrder = asyncHandler(async (req, res) => {
@@ -98,12 +99,10 @@ export const createCheckoutOrder = asyncHandler(async (req, res) => {
   return res.status(200).json(
     new ApiResponse(200, "Order created successfully", {
       orderId: razorpayOrder.id,
-
       amount: razorpayOrder.amount,
-
       currency: razorpayOrder.currency,
-
       dbOrderId: order._id,
+      key: process.env.RAZORPAY_KEY_ID, // added
     }),
   );
 });
@@ -123,25 +122,49 @@ export const checkOutSuccess = asyncHandler(async (req, res) => {
     .update(`${razorpay_order_id}|${razorpay_payment_id}`)
     .digest("hex");
 
-  const isValidSignature = expectedSignature === razorpay_signature;
-
-  if (!isValidSignature) {
+  if (expectedSignature !== razorpay_signature) {
     throw new ApiError(400, "Invalid payment signature");
   }
 
-  const order = await Order.findOne({
-    razorpayOrderId: razorpay_order_id,
-  });
+  const order = await Order.findOne({ razorpayOrderId: razorpay_order_id });
 
   if (!order) {
     throw new ApiError(404, "Order not found");
   }
 
+  // Avoid double-processing if this endpoint is ever hit twice
+  if (order.paymentStatus === "paid") {
+    return res.status(200).json(
+      new ApiResponse(200, "Payment already verified", {
+        orderId: order._id,
+        paymentId: order.razorpayPaymentId,
+      }),
+    );
+  }
+
   order.paymentStatus = "paid";
   order.razorpayPaymentId = razorpay_payment_id;
   order.paidAt = new Date();
+  order.orderStatus = "processing";
 
   await order.save();
+
+  // Decrement stock
+  await Promise.all(
+    order.products.map((item) =>
+      Product.findByIdAndUpdate(item.product, {
+        $inc: { stock: -item.quantity },
+      }),
+    ),
+  );
+
+  // Deactivate the coupon so it can't be reused
+  if (order.couponCode) {
+    await Coupon.findOneAndUpdate(
+      { code: order.couponCode, userId: order.user },
+      { isActive: false },
+    );
+  }
 
   return res.status(200).json(
     new ApiResponse(200, "Payment verified successfully", {
