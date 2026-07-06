@@ -15,7 +15,7 @@ export const protectedRoute = asyncHandler(async (req, res, next) => {
     } catch(error) {
         throw new ApiError(401,'Invalid or expired token')
     }
-    const user = await User.findById(decoded.userId).select('-password').lean();
+    const user = await User.findById(decoded.userId).select('-password');
     if (!user) {
         throw new ApiError(404, 'User not found');
     }

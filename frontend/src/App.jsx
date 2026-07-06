@@ -10,14 +10,21 @@ import { useEffect } from "react";
 import LoadingSpinner from "./components/LoadingSpinner.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
 import CategoryPage from "./pages/CategoryPage.jsx";
+import CartPage from "./pages/CartPage.jsx";
+import { useCartStore } from "./stores/useCartStore.js";
 
 
 function App() {
   const { user, checkAuth, checkingAuth } = useUserStore();
-
+  const { getCartItems } = useCartStore();
+  
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  useEffect(() => {
+    getCartItems();
+  }, []);
 
   if(checkingAuth) return <LoadingSpinner />;
 
@@ -46,12 +53,9 @@ function App() {
               user?.role === "admin" ? <AdminPage /> : <Navigate to="/login" />
             }
           />
-          <Route
-            path="/category/:category"
-            element={
-              <CategoryPage />
-            }
-          />
+          <Route path="/category/:category" element={<CategoryPage />} />
+          <Route path="/cart" element={user ? <CartPage /> : <Navigate to={'/login'} />} />
+          
         </Routes>
       </div>
       <Toaster />
