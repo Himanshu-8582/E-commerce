@@ -12,6 +12,7 @@ import AdminPage from "./pages/AdminPage.jsx";
 import CategoryPage from "./pages/CategoryPage.jsx";
 import CartPage from "./pages/CartPage.jsx";
 import { useCartStore } from "./stores/useCartStore.js";
+import PurchaseCancelPage from "./pages/PurchaseCancelPage.jsx";
 
 
 function App() {
@@ -55,8 +56,14 @@ function App() {
             }
           />
           <Route path="/category/:category" element={<CategoryPage />} />
-          <Route path="/cart" element={user ? <CartPage /> : <Navigate to={'/login'} />} />
-          
+          <Route
+            path="/cart"
+            element={user ? <CartPage /> : <Navigate to={"/login"} />}
+          />
+          <Route
+            path="/purchase-cancel"
+            element={user ? <PurchaseCancelPage /> : <Navigate to="/login" />}
+          />
         </Routes>
       </div>
       <Toaster />

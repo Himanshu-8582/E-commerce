@@ -62,12 +62,19 @@ export const getDailySalesData = async (startDate, endDate) => {
 
     const dateArray = getDatesInRange(startDate, endDate);
     // console.log(dateArray);
-    return dateArray, map(date => {
-        const foundData = dailySalesData.find(item => itemm._id == date);
-        return {
+    return dateArray.map(date => {
+        const salesMap = new Map(
+          dailySalesData.map((item) => [item._id, item]),
+        );
+
+        return dateArray.map((date) => {
+          const foundData = salesMap.get(date);
+
+          return {
             date,
-            sales: foundData.sales || 0,
-            revenue: foundData.revenue || 0,
-        }
+            sales: foundData?.sales ?? 0,
+            revenue: foundData?.revenue ?? 0,
+          };
+        });
     })
 }

@@ -75,12 +75,12 @@ const OrderSummary = () => {
             });
 
             clearCart();
-            navigate("/purchase-success", { replace: true });
+            window.alert("Payment Success");
           } catch (err) {
             toast.error(
               err.response?.data?.message || "Payment verification failed.",
             );
-            navigate("/purchase-failed", { replace: true });
+            navigate("/purchase-cancel", { replace: true });
           }
         },
 
