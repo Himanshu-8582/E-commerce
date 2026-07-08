@@ -5,7 +5,7 @@ import { adminRoute, protectedRoute } from '../middlewares/auth.middleware.js';
 const router = express.Router();
 
 router.get('/',protectedRoute,adminRoute, getAllProducts);
-router.get("/featured", protectedRoute, adminRoute,getFeaturedProducts);
+router.get("/featured",getFeaturedProducts);
 router.get('/recommendations', getRecommendedProducts);
 router.get('/category/:category', getProductsByCategory);
 

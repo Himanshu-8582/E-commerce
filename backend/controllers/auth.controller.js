@@ -88,7 +88,7 @@ export const login = asyncHandler(async (req, res) => {
     }
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
-        throw new ApiError(401, 'Invalid credentials');
+        throw new ApiError(400, 'Invalid credentials');
     }
     const { accessToken, refreshToken } = generateTokens(user._id);
     await storeRefreshToken(user._id, refreshToken);
@@ -122,7 +122,7 @@ export const logout = asyncHandler(async (req, res) => {
 export const refresh_Token = asyncHandler(async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
-        throw new ApiError(404, 'token not found || login first');
+        throw new ApiError(401, "Refresh token missing");
     }
     const decode = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
     const storedRefreshToken = await redis.get(`refresh_token:${decode.userId}`);
